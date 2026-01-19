@@ -5,14 +5,15 @@ import Fastify from 'fastify'
 import 'dotenv/config'
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import productsRoutes from './routes/products.routes';
 
 const PORT = parseInt(process.env.PORT ?? '3000');
 
 const fastify = Fastify({
-  logger: true
+    logger: true
 })
 
-fastify.register(cors,{
+fastify.register(cors, {
     origin: true,
     credentials: true,
 })
@@ -20,6 +21,8 @@ fastify.register(cors,{
 fastify.register(helmet, {
     contentSecurityPolicy: false
 });
+
+fastify.register(productsRoutes, { prefix: '/products' });
 
 // Declare a route
 fastify.get('/', async (request, reply) => {
@@ -39,11 +42,11 @@ fastify.get('/health', async (request, reply) => {
 
 // Run the server!
 fastify.listen({ port: PORT }, function (err, address) {
-  if (err) {
-    fastify.log.error(err)
-    process.exit(1)
-  }
-  // Server is now listening on ${address}
+    if (err) {
+        fastify.log.error(err)
+        process.exit(1)
+    }
+    // Server is now listening on ${address}
 })
 
 export default fastify;
