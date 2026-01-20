@@ -1,4 +1,4 @@
-export interface ProductFilters{
+export interface ProductFilters {
     page?: number;
     limit?: number;
     minPrice?: number;
@@ -6,4 +6,18 @@ export interface ProductFilters{
     search?: string;
     sortBy: 'price' | 'name' | 'createdAt';
     sortOrder: 'asc' | 'desc';
+}
+
+export interface AuthRequest {
+    email: string;
+    password: string;
+}
+
+export interface RegisterRequest extends AuthRequest {
+    firstName: string;
+    lastName: string;
+    cpf?: string;
+    dateOfBirth?: string;
+    phone?: string;
+    role?: 'USER' | 'ADMIN',
 }
