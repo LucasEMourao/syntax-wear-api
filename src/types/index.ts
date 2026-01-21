@@ -19,5 +19,16 @@ export interface RegisterRequest extends AuthRequest {
     cpf?: string;
     dateOfBirth?: string;
     phone?: string;
-    role?: 'USER' | 'ADMIN',
+}
+
+export interface CreateProduct {
+    name: string;
+    description: string;
+    price: number;
+    colors?: string[];
+    sizes?: string[];
+    slug: string;
+    stock: number;
+    active: boolean;
+    images?: string[];
 }

@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { getProduct, listProducts } from "../controllers/products.controller";
+import { getProduct, listProducts, createNewProduct } from "../controllers/products.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 
 export default async function productRoutes(fastify: FastifyInstance) {
@@ -82,4 +82,34 @@ export default async function productRoutes(fastify: FastifyInstance) {
             },
         },
     }, getProduct);
+
+    fastify.post("/", {
+        schema: {
+            tags: ["Products"],
+            description: "Criar um novo produto",
+            required: ["name", "description", "price", "slug", "active", "stock"],
+            body: {
+                type: "object",
+                properties: {
+                    name: { type: "string" },
+                    description: { type: "string" },
+                    price: { type: "number" },
+                    active: { type: "boolean" },
+                    stock: { type: "number" },
+                    colors: {
+                        type: "array",
+                        items: { type: "string" },
+                    },
+                    images: {
+                        type: "array",
+                        items: { type: "string" },
+                    },
+                    sizes: {
+                        type: "array",
+                        items: { type: "string" },
+                    },
+                },
+            },
+        },
+    }, createNewProduct);
 }
