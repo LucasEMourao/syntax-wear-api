@@ -2,14 +2,14 @@ import { prisma } from '../utils/prisma';
 import { ProductFilters } from '../types';
 
 export const getProducts = async (filter: ProductFilters) => {
-  const { 
-    minPrice, 
-    maxPrice, 
-    search, 
-    sortBy, 
-    sortOrder, 
-    page = 1, 
-    limit = 10 
+  const {
+    minPrice,
+    maxPrice,
+    search,
+    sortBy,
+    sortOrder,
+    page = 1,
+    limit = 10
   } = filter;
 
   const where: any = {};
@@ -76,4 +76,16 @@ export const getProducts = async (filter: ProductFilters) => {
     console.error('Erro ao buscar produtos:', error);
     throw error;
   }
+};
+
+export const getProductById = async (id: number) => {
+  const product = prisma.product.findUnique({
+    where: { id },
+  })
+
+  if (!product) {
+    throw new Error('Produto não encontrado');
+  }
+
+  return product;
 };

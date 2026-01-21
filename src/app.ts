@@ -1,7 +1,7 @@
 // Require the framework and instantiate it
 
 // ESM
-import Fastify from 'fastify'
+import Fastify, { FastifyError } from 'fastify'
 import 'dotenv/config'
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
@@ -10,6 +10,7 @@ import swagger from '@fastify/swagger'
 import scalar from '@scalar/fastify-api-reference';
 import jwt from '@fastify/jwt'
 import authRoutes from './routes/auth.routes';
+import { errorHanlder } from './middlewares/error.middleware';
 
 const PORT = parseInt(process.env.PORT ?? '3000');
 
@@ -83,6 +84,8 @@ fastify.get('/health', async (request, reply) => {
     }
 });
 
+fastify.setErrorHandler(errorHanlder);
+
 // Run the server!
 fastify.listen({ port: PORT }, function (err, address) {
     if (err) {
@@ -90,6 +93,6 @@ fastify.listen({ port: PORT }, function (err, address) {
         process.exit(1)
     }
     // Server is now listening on ${address}
-})
+});
 
 export default fastify;
