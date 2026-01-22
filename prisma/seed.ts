@@ -3,6 +3,12 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+const categories = [
+  { name: 'Camisetas', slug: 'camisetas', description: 'Camisetas diversas', active: true },
+  { name: 'Moletons', slug: 'moletons', description: 'Moletom e hoodies', active: true },
+  { name: 'Acessórios', slug: 'acessorios', description: 'Acessórios e complementos', active: true },
+]
+
 const products = [
   {
     name: 'Classic Tee',
@@ -14,6 +20,7 @@ const products = [
     sizes: ['S', 'M', 'L'],
     stock: 120,
     active: true,
+    categorySlug: 'camisetas',
   },
   {
     name: 'Vintage Hoodie',
@@ -25,6 +32,7 @@ const products = [
     sizes: ['M', 'L', 'XL'],
     stock: 60,
     active: true,
+    categorySlug: 'moletons',
   },
   {
     name: 'Slim Jeans',
@@ -36,6 +44,7 @@ const products = [
     sizes: ['30', '32', '34', '36'],
     stock: 40,
     active: true,
+    categorySlug: 'camisetas',
   },
   {
     name: 'Sport Shorts',
@@ -47,6 +56,7 @@ const products = [
     sizes: ['S', 'M', 'L'],
     stock: 200,
     active: true,
+    categorySlug: 'camisetas',
   },
   {
     name: 'Leather Belt',
@@ -58,6 +68,7 @@ const products = [
     sizes: ['M', 'L'],
     stock: 80,
     active: true,
+    categorySlug: 'acessorios',
   },
   {
     name: 'Summer Dress',
@@ -69,6 +80,7 @@ const products = [
     sizes: ['S', 'M', 'L'],
     stock: 30,
     active: true,
+    categorySlug: 'camisetas',
   },
   {
     name: 'Running Shoes',
@@ -80,6 +92,7 @@ const products = [
     sizes: ['40', '41', '42', '43'],
     stock: 75,
     active: true,
+    categorySlug: 'acessorios',
   },
   {
     name: 'Beanie Cap',
@@ -91,6 +104,7 @@ const products = [
     sizes: [],
     stock: 150,
     active: true,
+    categorySlug: 'acessorios',
   },
   {
     name: 'Canvas Backpack',
@@ -102,6 +116,7 @@ const products = [
     sizes: [],
     stock: 45,
     active: true,
+    categorySlug: 'acessorios',
   },
   {
     name: 'Striped Socks',
@@ -113,12 +128,37 @@ const products = [
     sizes: ['One Size'],
     stock: 300,
     active: true,
+    categorySlug: 'acessorios',
   },
 ]
 
 async function main() {
   try {
-    const res = await prisma.product.createMany({ data: products, skipDuplicates: true })
+    // Cria categorias (skipDuplicates evita erro se já existirem)
+    await prisma.category.createMany({ data: categories, skipDuplicates: true })
+
+    // Recupera categorias para mapear slugs -> ids
+    const savedCategories = await prisma.category.findMany()
+    const categoryMap: Record<string, number> = {}
+    for (const c of savedCategories) {
+      categoryMap[c.slug] = c.id
+    }
+
+    // Prepara dados dos produtos com categoryId
+    const productsWithCategory = products.map((p: any) => ({
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: p.price,
+      colors: p.colors,
+      images: p.images,
+      sizes: p.sizes,
+      stock: p.stock,
+      active: p.active,
+      categoryId: categoryMap[p.categorySlug] || savedCategories[0]?.id,
+    }))
+
+    const res = await prisma.product.createMany({ data: productsWithCategory, skipDuplicates: true })
     console.log(`✅ Seed finalizado: ${res.count} produtos inseridos (skipDuplicates: true)`)
   } catch (error) {
     console.error('❌ Erro no seed:', error)
