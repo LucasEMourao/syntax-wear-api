@@ -1,4 +1,4 @@
-import { errorCodes, FastifyError, FastifyReply, FastifyRequest } from "fastify"
+import { FastifyError, FastifyReply, FastifyRequest } from "fastify"
 import z, { ZodError } from "zod"
 
 export const errorHanlder = (error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {

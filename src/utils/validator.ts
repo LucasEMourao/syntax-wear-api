@@ -35,4 +35,11 @@ export const createProductSchema = z.object({
     stock: z.number().int().nonnegative("Estoque deve ser positivo"),
     active: z.boolean(),
     images: z.array(z.string()).optional(),
-}); 
+});
+
+export const updateProductSchema = createProductSchema.partial();
+
+
+export const deleteProductSchema = z.object({
+    id: z.number().int().min(1, "ID inválido"),
+});
