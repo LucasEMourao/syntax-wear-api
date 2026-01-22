@@ -1,11 +1,15 @@
 import { prisma } from "../utils/prisma";
 import { CreateProduct, ProductFilters, UpdateProduct } from "../types";
-import { Prisma } from "@prisma/client";
 
 export const getProducts = async (filter: ProductFilters) => {
-	const { minPrice, maxPrice, search, sortBy, sortOrder, page = 1, limit = 10 } = filter;
+	const { minPrice, maxPrice, search, categoryId, sortBy, sortOrder, page = 1, limit = 10 } = filter;
 
 	const where: any = {};
+
+	// Filtro por categoria
+	if (categoryId) {
+		where.categoryId = categoryId;
+	}
 
 	// Filtro por preço
 	if (minPrice !== undefined || maxPrice !== undefined) {
@@ -74,6 +78,9 @@ export const getProducts = async (filter: ProductFilters) => {
 export const getProductById = async (id: number) => {
 	const product = await prisma.product.findUnique({
 		where: { id },
+		include:{
+			category: true,
+		}
 	});
 
 	if (!product) {
@@ -92,14 +99,9 @@ export const createProduct = async (data: CreateProduct) => {
 		throw new Error("Slug já existe. Escolha outro nome para o produto.");
 	}
 
-	// Coerce price to Prisma.Decimal (Product.price is Decimal in schema)
-	const payload: any = { ...data };
-	if (payload.price !== undefined) payload.price = new Prisma.Decimal(String(payload.price));
-
-	const newProduct = await prisma.product.create({ data: payload });
+	const newProduct = await prisma.product.create({ data });
 	return newProduct;
 };
-
 export const updateProduct = async (id: number, data: UpdateProduct) => {
 	const existingProduct = await prisma.product.findUnique({
 		where: { id },
@@ -119,13 +121,9 @@ export const updateProduct = async (id: number, data: UpdateProduct) => {
 		}
 	}
 
-	// Convert price to Prisma.Decimal if provided
-	const payload: any = { ...data };
-	if (payload.price !== undefined) payload.price = new Prisma.Decimal(String(payload.price));
-
 	const updatedProduct = await prisma.product.update({
 		where: { id },
-		data: payload,
+		data,
 	});
 
 	return updatedProduct;
