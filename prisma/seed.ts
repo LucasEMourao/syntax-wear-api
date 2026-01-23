@@ -4,9 +4,54 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 const categories = [
-  { name: 'Camisetas', slug: 'camisetas', description: 'Camisetas diversas', active: true },
-  { name: 'Moletons', slug: 'moletons', description: 'Moletom e hoodies', active: true },
-  { name: 'Acessórios', slug: 'acessorios', description: 'Acessórios e complementos', active: true },
+  {
+    name: 'Camisetas',
+    slug: 'camisetas',
+    description: 'Camisetas casuais e confortáveis para o dia a dia',
+    active: true,
+  },
+  {
+    name: 'Moletons',
+    slug: 'moletons',
+    description: 'Moletons quentes e estilosos',
+    active: true,
+  },
+  {
+    name: 'Calças',
+    slug: 'calcas',
+    description: 'Calças e jeans para todas as ocasiões',
+    active: true,
+  },
+  {
+    name: 'Shorts',
+    slug: 'shorts',
+    description: 'Shorts esportivos e casuais',
+    active: true,
+  },
+  {
+    name: 'Acessórios',
+    slug: 'acessorios',
+    description: 'Cintos, bonés, mochilas e mais',
+    active: true,
+  },
+  {
+    name: 'Vestidos',
+    slug: 'vestidos',
+    description: 'Vestidos para diversas ocasiões',
+    active: true,
+  },
+  {
+    name: 'Calçados',
+    slug: 'calcados',
+    description: 'Tênis, sapatos e sandálias',
+    active: true,
+  },
+  {
+    name: 'Meias',
+    slug: 'meias',
+    description: 'Meias confortáveis em diversos estilos',
+    active: true,
+  },
 ]
 
 const products = [
@@ -20,7 +65,6 @@ const products = [
     sizes: ['S', 'M', 'L'],
     stock: 120,
     active: true,
-    categorySlug: 'camisetas',
   },
   {
     name: 'Vintage Hoodie',
@@ -32,7 +76,6 @@ const products = [
     sizes: ['M', 'L', 'XL'],
     stock: 60,
     active: true,
-    categorySlug: 'moletons',
   },
   {
     name: 'Slim Jeans',
@@ -44,7 +87,6 @@ const products = [
     sizes: ['30', '32', '34', '36'],
     stock: 40,
     active: true,
-    categorySlug: 'camisetas',
   },
   {
     name: 'Sport Shorts',
@@ -56,7 +98,6 @@ const products = [
     sizes: ['S', 'M', 'L'],
     stock: 200,
     active: true,
-    categorySlug: 'camisetas',
   },
   {
     name: 'Leather Belt',
@@ -68,7 +109,6 @@ const products = [
     sizes: ['M', 'L'],
     stock: 80,
     active: true,
-    categorySlug: 'acessorios',
   },
   {
     name: 'Summer Dress',
@@ -80,7 +120,6 @@ const products = [
     sizes: ['S', 'M', 'L'],
     stock: 30,
     active: true,
-    categorySlug: 'camisetas',
   },
   {
     name: 'Running Shoes',
@@ -92,7 +131,6 @@ const products = [
     sizes: ['40', '41', '42', '43'],
     stock: 75,
     active: true,
-    categorySlug: 'acessorios',
   },
   {
     name: 'Beanie Cap',
@@ -104,7 +142,6 @@ const products = [
     sizes: [],
     stock: 150,
     active: true,
-    categorySlug: 'acessorios',
   },
   {
     name: 'Canvas Backpack',
@@ -116,7 +153,6 @@ const products = [
     sizes: [],
     stock: 45,
     active: true,
-    categorySlug: 'acessorios',
   },
   {
     name: 'Striped Socks',
@@ -128,38 +164,231 @@ const products = [
     sizes: ['One Size'],
     stock: 300,
     active: true,
-    categorySlug: 'acessorios',
   },
 ]
 
 async function main() {
   try {
-    // Cria categorias (skipDuplicates evita erro se já existirem)
-    await prisma.category.createMany({ data: categories, skipDuplicates: true })
+    // Limpar dados existentes (em ordem devido às FKs)
+    await prisma.orderItem.deleteMany({})
+    await prisma.order.deleteMany({})
+    await prisma.product.deleteMany({})
+    await prisma.category.deleteMany({})
+    await prisma.user.deleteMany({})
+    console.log('🗑️  Dados antigos removidos')
 
-    // Recupera categorias para mapear slugs -> ids
-    const savedCategories = await prisma.category.findMany()
-    const categoryMap: Record<string, number> = {}
-    for (const c of savedCategories) {
-      categoryMap[c.slug] = c.id
-    }
+    // Criar usuários
+    const user1 = await prisma.user.create({
+      data: {
+        firstName: 'João',
+        lastName: 'Silva',
+        email: 'joao@example.com',
+        password: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FPM0xLqc8y8eMONLr9xOhQ1lUPXIEki', // senha: password123
+        cpf: '12345678901',
+        phone: '11999999999',
+        role: 'USER',
+      },
+    })
 
-    // Prepara dados dos produtos com categoryId
-    const productsWithCategory = products.map((p: any) => ({
-      name: p.name,
-      slug: p.slug,
-      description: p.description,
-      price: p.price,
-      colors: p.colors,
-      images: p.images,
-      sizes: p.sizes,
-      stock: p.stock,
-      active: p.active,
-      categoryId: categoryMap[p.categorySlug] || savedCategories[0]?.id,
-    }))
+    const user2 = await prisma.user.create({
+      data: {
+        firstName: 'Maria',
+        lastName: 'Santos',
+        email: 'maria@example.com',
+        password: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FPM0xLqc8y8eMONLr9xOhQ1lUPXIEki', // senha: password123
+        phone: '11988888888',
+        role: 'USER',
+      },
+    })
 
-    const res = await prisma.product.createMany({ data: productsWithCategory, skipDuplicates: true })
-    console.log(`✅ Seed finalizado: ${res.count} produtos inseridos (skipDuplicates: true)`)
+    const admin = await prisma.user.create({
+      data: {
+        firstName: 'Admin',
+        lastName: 'System',
+        email: 'admin@example.com',
+        password: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FPM0xLqc8y8eMONLr9xOhQ1lUPXIEki', // senha: password123
+        role: 'ADMIN',
+      },
+    })
+
+    console.log(`✅ 3 usuários criados (${user1.email}, ${user2.email}, ${admin.email})`)
+
+    // Criar categorias
+    const createdCategories = await prisma.category.createMany({ data: categories })
+    console.log(`✅ ${createdCategories.count} categorias criadas`)
+
+    // Buscar categorias criadas para obter IDs
+    const camisetas = await prisma.category.findUnique({ where: { slug: 'camisetas' } })
+    const moletons = await prisma.category.findUnique({ where: { slug: 'moletons' } })
+    const calcas = await prisma.category.findUnique({ where: { slug: 'calcas' } })
+    const shorts = await prisma.category.findUnique({ where: { slug: 'shorts' } })
+    const acessorios = await prisma.category.findUnique({ where: { slug: 'acessorios' } })
+    const vestidos = await prisma.category.findUnique({ where: { slug: 'vestidos' } })
+    const calcados = await prisma.category.findUnique({ where: { slug: 'calcados' } })
+    const meias = await prisma.category.findUnique({ where: { slug: 'meias' } })
+
+    // Adicionar categoryId aos produtos
+    const productsWithCategory = [
+      { ...products[0], categoryId: camisetas!.id },      // Classic Tee
+      { ...products[1], categoryId: moletons!.id },       // Vintage Hoodie
+      { ...products[2], categoryId: calcas!.id },         // Slim Jeans
+      { ...products[3], categoryId: shorts!.id },         // Sport Shorts
+      { ...products[4], categoryId: acessorios!.id },     // Leather Belt
+      { ...products[5], categoryId: vestidos!.id },       // Summer Dress
+      { ...products[6], categoryId: calcados!.id },       // Running Shoes
+      { ...products[7], categoryId: acessorios!.id },     // Beanie Cap
+      { ...products[8], categoryId: acessorios!.id },     // Canvas Backpack
+      { ...products[9], categoryId: meias!.id },          // Striped Socks
+    ]
+
+    // Criar produtos
+    const createdProducts = await prisma.product.createMany({ data: productsWithCategory })
+    console.log(`✅ ${createdProducts.count} produtos criados com categorias vinculadas`)
+
+    // Buscar produtos criados para obter IDs
+    const classicTee = await prisma.product.findUnique({ where: { slug: 'classic-tee' } })
+    const vintageHoodie = await prisma.product.findUnique({ where: { slug: 'vintage-hoodie' } })
+    const slimJeans = await prisma.product.findUnique({ where: { slug: 'slim-jeans' } })
+    const sportShorts = await prisma.product.findUnique({ where: { slug: 'sport-shorts' } })
+    const runningShoes = await prisma.product.findUnique({ where: { slug: 'running-shoes' } })
+    const summerDress = await prisma.product.findUnique({ where: { slug: 'summer-dress' } })
+
+    // Criar pedidos com OrderItems
+    const order1 = await prisma.order.create({
+      data: {
+        userId: user1.id,
+        total: 109.98, // 2x Classic Tee (29.99 cada) + 1x Sport Shorts (24.00) + frete estimado 26.00
+        status: 'PAID',
+        shippingAddress: {
+          cep: '01310100',
+          street: 'Av. Paulista',
+          number: '1578',
+          complement: 'Apto 101',
+          neighborhood: 'Bela Vista',
+          city: 'São Paulo',
+          state: 'SP',
+          country: 'BR',
+        },
+        paymentMethod: 'credit_card',
+        items: {
+          create: [
+            {
+              productId: classicTee!.id,
+              price: 29.99,
+              quantity: 2,
+              size: 'M',
+            },
+            {
+              productId: sportShorts!.id,
+              price: 24.00,
+              quantity: 1,
+              size: 'L',
+            },
+          ],
+        },
+      },
+    })
+
+    const order2 = await prisma.order.create({
+      data: {
+        userId: user2.id,
+        total: 229.89, // 1x Vintage Hoodie (59.90) + 1x Running Shoes (119.99) + 1x Summer Dress (49.00) + frete estimado 1.00
+        status: 'SHIPPED',
+        shippingAddress: {
+          cep: '20040020',
+          street: 'Av. Rio Branco',
+          number: '156',
+          neighborhood: 'Centro',
+          city: 'Rio de Janeiro',
+          state: 'RJ',
+          country: 'BR',
+        },
+        paymentMethod: 'pix',
+        items: {
+          create: [
+            {
+              productId: vintageHoodie!.id,
+              price: 59.90,
+              quantity: 1,
+              size: 'L',
+            },
+            {
+              productId: runningShoes!.id,
+              price: 119.99,
+              quantity: 1,
+              size: '42',
+            },
+            {
+              productId: summerDress!.id,
+              price: 49.00,
+              quantity: 1,
+              size: 'M',
+            },
+          ],
+        },
+      },
+    })
+
+    const order3 = await prisma.order.create({
+      data: {
+        userId: user1.id,
+        total: 79.50, // 1x Slim Jeans (79.50)
+        status: 'PENDING',
+        shippingAddress: {
+          cep: '01310100',
+          street: 'Av. Paulista',
+          number: '1578',
+          complement: 'Apto 101',
+          neighborhood: 'Bela Vista',
+          city: 'São Paulo',
+          state: 'SP',
+          country: 'BR',
+        },
+        paymentMethod: 'boleto',
+        items: {
+          create: [
+            {
+              productId: slimJeans!.id,
+              price: 79.50,
+              quantity: 1,
+              size: '32',
+            },
+          ],
+        },
+      },
+    })
+
+    // Guest order (sem userId)
+    const order4 = await prisma.order.create({
+      data: {
+        total: 179.97, // 3x Classic Tee (29.99 cada) + frete estimado 90.00
+        status: 'DELIVERED',
+        shippingAddress: {
+          cep: '30130100',
+          street: 'Av. Afonso Pena',
+          number: '867',
+          neighborhood: 'Centro',
+          city: 'Belo Horizonte',
+          state: 'MG',
+          country: 'BR',
+        },
+        paymentMethod: 'credit_card',
+        items: {
+          create: [
+            {
+              productId: classicTee!.id,
+              price: 29.99,
+              quantity: 3,
+              size: 'L',
+            },
+          ],
+        },
+      },
+    })
+
+    console.log(`✅ 4 pedidos criados (Order IDs: ${order1.id}, ${order2.id}, ${order3.id}, ${order4.id})`)
+    
+    console.log('🎉 Seed finalizado com sucesso!')
   } catch (error) {
     console.error('❌ Erro no seed:', error)
     process.exit(1)
