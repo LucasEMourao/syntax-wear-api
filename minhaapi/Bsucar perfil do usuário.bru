@@ -1,0 +1,22 @@
+meta {
+  name: Bsucar perfil do usuário
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/auth/profile
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUzLCJpYXQiOjE3NzA0MDY2MDN9.8xGnmHeEuYHRywaB7zsCQ8nZ9z8Smadpp34HH4Kcfws
+}
+
+body:json {
+  {
+    "email": "lucas77@gmail.com",
+    "password": "123456789"
+  }
+}

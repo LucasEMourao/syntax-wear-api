@@ -30,6 +30,4 @@ export const login = async (request: FastifyRequest<{ Body: AuthRequest }>, repl
     })
 }
 
-export const profile = async (request: FastifyRequest, reply: FastifyReply) => {
-    
-};
+export const profile = async (request: FastifyRequest, reply: FastifyReply) => reply.send(request.user)
